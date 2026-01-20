@@ -22,6 +22,7 @@ export default function Landing({ onEnter }) {
           cursorCharacter="|"
         />
       </div>
+      {/* main grid */}
 
       {/* MAIN CONTENT GRID */}
       <div className="landing-content">
