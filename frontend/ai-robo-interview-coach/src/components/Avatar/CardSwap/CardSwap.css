@@ -5,7 +5,7 @@
   right: 0;
   transform: translate(5%, 20%);
   transform-origin: bottom right;
-
+/* color: #000; */
   perspective: 900px;
   overflow: visible;
 }
