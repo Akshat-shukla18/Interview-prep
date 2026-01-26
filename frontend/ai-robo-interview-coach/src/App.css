@@ -1056,4 +1056,31 @@ position: relative;
   transform: translateY(0);
   box-shadow: 0 2px 10px rgba(239, 68, 68, 0.5);
 }
+.mic-btn {
+  background: transparent;
+  border: 1px solid #2563eb;
+  border-radius: 50%;
+  padding: 8px 10px;
+  cursor: pointer;
+  font-size: 16px;
+  color: #93c5fd;
+  transition: all 0.2s ease;
+}
+
+.mic-btn:hover {
+  background: rgba(37, 99, 235, 0.15);
+}
+
+.mic-btn.active {
+  background: #2563eb;
+  color: white;
+  box-shadow: 0 0 12px rgba(37, 99, 235, 0.8);
+  animation: pulse 1.2s infinite;
+}
+
+@keyframes pulse {
+  0% { box-shadow: 0 0 0 0 rgba(37,99,235,0.7); }
+  70% { box-shadow: 0 0 0 10px rgba(37,99,235,0); }
+  100% { box-shadow: 0 0 0 0 rgba(37,99,235,0); }
+}
 
