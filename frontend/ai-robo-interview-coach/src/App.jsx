@@ -12,6 +12,10 @@
   import Landing from "./Landing";
 import Help from "./components/Avatar/Help/help.jsx";
 import FeedbackModal from "./components/Avatar/Feedback/FeedbackModal";
+import { speak } from "./speak";
+
+
+
 
   function App() {
   const [authOpen, setAuthOpen] = useState(false);
@@ -20,6 +24,8 @@ import FeedbackModal from "./components/Avatar/Feedback/FeedbackModal";
     // const [input, setInput] = useState("");
     const interviewEndRef = useRef(null);
 
+    const [listening, setListening] = useState(false);
+  const recognitionRef = useRef(null);
     // const [messages, setMessages] = useState([]);
     const [chatMessages, setChatMessages] = useState([ {
       from: "ai",
@@ -47,7 +53,9 @@ import FeedbackModal from "./components/Avatar/Feedback/FeedbackModal";
   const [showExitConfirm, setShowExitConfirm] = useState(false);
   const [search, setSearch] = useState("");
   const [entered, setEntered] = useState(false);
-  
+   const [screen, setScreen] = useState("landing");
+  const [aiSpeaking, setAiSpeaking] = useState(false);
+
 
   useEffect(() => {
     interviewEndRef.current?.scrollIntoView({
@@ -64,6 +72,8 @@ import FeedbackModal from "./components/Avatar/Feedback/FeedbackModal";
     }
     return () => clearInterval(interval);
   }, [timerRunning]);
+  //speech recognition  useEffect
+
 
   // FILE UPLOAD HANDLER
   const handleFileUpload = async (e) => {
@@ -107,7 +117,20 @@ import FeedbackModal from "./components/Avatar/Feedback/FeedbackModal";
 
 
   // landing | app
-    
+ // MIC TOGGLE   
+const toggleMic = () => {
+  if (!recognitionRef.current) return;
+
+  if (listening) {
+    setListening(false);
+    recognitionRef.current.stop(); // 🛑 user explicitly stops
+    setAvatarState(AVATAR_STATES.IDLE);
+  } else {
+    setListening(true);
+    recognitionRef.current.start(); // 🎙️ user explicitly starts
+  }
+};
+
 
     
   
@@ -150,72 +173,148 @@ import FeedbackModal from "./components/Avatar/Feedback/FeedbackModal";
 
 
   //   
-  const sendMessage = async () => {
-    if (!user) {
-      setAuthOpen(true);
-      return;
-    }
-    if (loading) return;
+ const sendMessage = async () => {
+  // 🛑 HARD STOP MIC IMMEDIATELY
+  if (recognitionRef.current) {
+    recognitionRef.current.abort(); // stronger than stop
+  }
 
-    const currentInput =
-      mode === "chat" ? chatInput : interviewInput;
+  setListening(false);
+  setAvatarState(AVATAR_STATES.IDLE);
 
-    if (!currentInput.trim()) return;
+  if (!user) {
+    setAuthOpen(true);
+    return;
+  }
 
-    setLoading(true);
-    setAvatarState(AVATAR_STATES.TALKING);
+  if (loading) return;
 
-    // ✅ Build payload safely
-    const payload = {
-      message: currentInput,
-      mode,
-      jobTitle: interviewConfig.jobTitle,
-      experience: interviewConfig.experience,
+  const currentInput =
+    mode === "chat" ? chatInput : interviewInput;
 
-      // ✅ Send document text ONLY in chat mode
-      documentText:
-        mode === "chat" && uploadedDoc
-          ? uploadedDoc.text
-          : null
-    };
+  if (!currentInput.trim()) return;
 
-    const res = await fetch("http://localhost:5000/chat/public", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload)
+  setLoading(true);
+  setAvatarState(AVATAR_STATES.TALKING);
+
+  const payload = {
+    message: currentInput,
+    mode,
+    jobTitle: interviewConfig.jobTitle,
+    experience: interviewConfig.experience,
+    documentText:
+      mode === "chat" && uploadedDoc ? uploadedDoc.text : null
+  };
+
+  const res = await fetch("http://localhost:5000/chat/public", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload)
+  });
+
+  const data = await res.json();
+
+  if (mode === "chat") {
+    setChatMessages((prev) => [
+      ...prev,
+      { from: "user", text: currentInput },
+      { from: "ai", text: data.reply }
+    ]);
+    setChatInput("");
+  } else {
+    setInterviewMessages((prev) => [
+      ...prev,
+      { from: "user", text: currentInput },
+      { from: "ai", text: data.reply }
+    ]);
+
+    // 🗣 AI speaks — mic MUST be locked
+    setAiSpeaking(true);
+    speak(data.reply, () => {
+      setAiSpeaking(false);
+      setAvatarState(AVATAR_STATES.IDLE);
     });
 
-    const data = await res.json();
+    setInterviewInput("");
+  }
 
-    if (mode === "chat") {
-      setChatMessages((prev) => [
-        ...prev,
-        { from: "user", text: currentInput },
-        { from: "ai", text: data.reply }
-      ]);
-      setChatInput("");
-    } else {
-      setInterviewMessages((prev) => [
-        ...prev,
-        { from: "user", text: currentInput },
-        { from: "ai", text: data.reply }
-      ]);
-      setInterviewInput("");
+  setLoading(false);
+};
+
+  
+ 
+
+ useEffect(() => {
+  const SpeechRecognition =
+    window.SpeechRecognition || window.webkitSpeechRecognition;
+
+  if (!SpeechRecognition) {
+    console.warn("Speech Recognition not supported");
+    return;
+  }
+
+  const recognition = new SpeechRecognition();
+  recognition.lang = "en-US";
+  recognition.interimResults = true;
+  recognition.continuous = true;
+
+  recognition.onstart = () => {
+    if (aiSpeaking) {
+      recognition.abort();
+      return;
+    }
+    setListening(true);
+    setAvatarState(AVATAR_STATES.LISTENING);
+  };
+
+  recognition.onend = () => {
+    setListening(false);
+    setAvatarState(AVATAR_STATES.IDLE);
+  };
+
+  recognition.onerror = () => {
+    setListening(false);
+    setAvatarState(AVATAR_STATES.IDLE);
+  };
+
+  recognition.onresult = (event) => {
+    if (aiSpeaking) return; // 🚫 BLOCK AI FEEDBACK
+
+    let finalTranscript = "";
+
+    for (let i = event.resultIndex; i < event.results.length; i++) {
+      if (event.results[i].isFinal) {
+        finalTranscript += event.results[i][0].transcript + " ";
+      }
     }
 
-    setAvatarState(AVATAR_STATES.IDLE);
-    setLoading(false);
+    if (!finalTranscript) return;
+
+    if (mode === "chat") {
+      setChatInput((prev) => prev + finalTranscript);
+    } else {
+      setInterviewInput((prev) => prev + finalTranscript);
+    }
   };
-  const [screen, setScreen] = useState("landing");
-  if (screen === "landing") {
-    return <Landing onEnter={() => setScreen("app")} />;
-  }
-  if (screen === "help") {
-    return <Help onBack={() => setScreen("app")} />;
-  }
+
+  recognitionRef.current = recognition;
+
+  return () => recognition.abort();
+}, [mode, aiSpeaking]);
+
+
 
   //app notations:
     return (
+    <>
+      {screen === "landing" && (
+      <Landing onEnter={() => setScreen("app")} />
+    )}
+
+    {screen === "help" && (
+      <Help onBack={() => setScreen("app")} />
+    )}
+   {screen === "app" && (
       <div className="app-container">
       
   <nav className="navbar">
@@ -443,6 +542,14 @@ import FeedbackModal from "./components/Avatar/Feedback/FeedbackModal";
   </div>
 
           <div className="interview-input-wrapper">
+ <button
+    className={`mic-btn ${listening ? "active" : ""}`}
+    onClick={toggleMic}
+    title="Voice typing"
+  >
+    🎤
+  </button>
+
     <input
     value={interviewInput}
     onChange={(e) =>{ setInterviewInput(e.target.value);
@@ -484,6 +591,7 @@ import FeedbackModal from "./components/Avatar/Feedback/FeedbackModal";
             className="confirm-exit-btn"
             onClick={() => {
               stopStopwatch();
+               window.speechSynthesis.cancel();
               setShowExitConfirm(false);
               setMode("chat");
             }}
@@ -552,7 +660,7 @@ import FeedbackModal from "./components/Avatar/Feedback/FeedbackModal";
           text: "Introduce yourself."
         }
       ]);
-
+speak("Introduce yourself.");
       setAwaitingAnswer(true);
       setInterviewInput("");
       startStopwatch();
@@ -603,6 +711,8 @@ import FeedbackModal from "./components/Avatar/Feedback/FeedbackModal";
 
       </div>
       </div>
+   )}
+      </>
     );
   }
   export default App;
