@@ -12,12 +12,16 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 app.use("/upload", uploadRoute);
-app.use('/chat/public',rateLimit({
-  windowMs: 15* 60 * 1000, 
-  max:50,
+app.use('/chat/public', rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 50,
   message: "Too many requests from this IP, please try again after 15 minutes"
-})
-);
+}));
+app.use('/send-feedback', rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 5,
+  message: "Too many feedback requests, please try again later"
+}));
 // app.post("/chat/public", async (req, res) => {
 //   const { message } = req.body;
 
@@ -142,10 +146,34 @@ IMPORTANT RULES:
 });
 
 
+app.post('/send-feedback', async (req, res) => {
+  const { name, email, rating, description } = req.body;
+
+  // Validate input
+  if (!name || !email || !rating || rating < 1 || rating > 5 || !description || description.length > 500) {
+    return res.status(400).json({ error: 'Invalid input: name, email (valid), rating(1-5), description(≤500 chars)' });
+  }
+
+  // TODO: Implement nodemailer with .env config (SMTP_HOST, etc.)
+  // For now: Log + success response
+  console.log('Feedback received:', { name, email, rating, description });
+
+  try {
+    // Placeholder: Replace with real email service
+    // const transporter = nodemailer.createTransport({...});
+    // await transporter.sendMail({ to: 'feedback@yourapp.com', ... });
+    res.json({ success: true, message: 'Feedback received successfully!' });
+  } catch (err) {
+    console.error('Feedback send error:', err);
+    res.status(500).json({ error: 'Failed to process feedback' });
+  }
+});
+
 const PORT = 5000;
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
+
 // console.log("AI KEY LOADED:", !!process.env.AI_API_KEY);
 // console.log("KEY PREFIX:", process.env.AI_API_KEY?.slice(0, 6));
 
