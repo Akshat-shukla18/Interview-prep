@@ -3,6 +3,7 @@ import cors from "cors";
 import dotenv from "dotenv";
 import nodemailer from "nodemailer";
 import uploadRoute from "./routes/upload.js";
+import rateLimit from 'express-rate-limit';
 
 dotenv.config();
 
@@ -11,6 +12,12 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 app.use("/upload", uploadRoute);
+app.use('/chat/public',rateLimit({
+  windowMs: 15* 60 * 1000, 
+  max:50,
+  message: "Too many requests from this IP, please try again after 15 minutes"
+})
+);
 // app.post("/chat/public", async (req, res) => {
 //   const { message } = req.body;
 
@@ -139,7 +146,7 @@ const PORT = 5000;
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
-console.log("AI KEY LOADED:", !!process.env.AI_API_KEY);
-console.log("KEY PREFIX:", process.env.AI_API_KEY?.slice(0, 6));
+// console.log("AI KEY LOADED:", !!process.env.AI_API_KEY);
+// console.log("KEY PREFIX:", process.env.AI_API_KEY?.slice(0, 6));
 
 
