@@ -1,6 +1,10 @@
 import "./landing.css";
 import CardSwap, { Card } from "./components/Avatar/CardSwap/CardSwap.jsx";
 import TextType from "./TextType";
+import img1 from "./assets/guidance.png";
+import img2 from "./assets/analysis.png";
+import img3 from "./assets/concepts.png";
+import img4 from "./assets/interview.png";
 
 export default function Landing({ onEnter }) {
   return (
@@ -39,10 +43,10 @@ export default function Landing({ onEnter }) {
         <div className="landing-right">
           <div className="cards-wrapper">
             <CardSwap width={360} height={240}>
-              <Card />
-              <Card />
-              <Card />
-              <Card />
+              <Card img={img1} />
+              <Card img={img2} />
+              <Card img={img3} />
+              <Card img={img4} />
             </CardSwap>
           </div>
         </div>

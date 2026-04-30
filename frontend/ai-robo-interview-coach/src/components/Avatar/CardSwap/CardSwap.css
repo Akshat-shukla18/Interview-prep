@@ -35,3 +35,30 @@
     transform: scale(0.55) translate(25%, 25%);
   }
 }
+.card {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  border-radius: 18px;
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.04);
+  backdrop-filter: blur(10px);
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6),
+              0 0 25px rgba(0, 140, 255, 0.2);
+  cursor: pointer;
+}
+
+/* image fill */
+.card-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+/* optional glow hover */
+.card:hover {
+  box-shadow: 0 0 35px rgba(0, 140, 255, 0.4);
+  transform: scale(1.02);
+  transition: all 0.3s ease;
+}

@@ -32,7 +32,10 @@ router.post("/", upload.single("file"), async (req, res) => {
     let extractedText = "";
 
     if (mimetype === "application/pdf") {
-      const loadingTask = pdfjsLib.getDocument({ data: buffer });
+      const uint8Array = new Uint8Array(buffer); 
+      const loadingTask = pdfjsLib.getDocument({
+        data: uint8Array
+      });
       const pdf = await loadingTask.promise;
 
       for (let i = 1; i <= pdf.numPages; i++) {

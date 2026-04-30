@@ -10,8 +10,15 @@ import React, {
 import gsap from 'gsap';
 import './CardSwap.css';
 
-export const Card = forwardRef(({ customClass, ...rest }, ref) => (
-  <div ref={ref} {...rest} className={`card ${customClass ?? ''} ${rest.className ?? ''}`.trim()} />
+export const Card = forwardRef(({ customClass, img, children, ...rest }, ref) => (
+  <div
+    ref={ref}
+    {...rest}
+    className={`card ${customClass ?? ''} ${rest.className ?? ''}`.trim()}
+  >
+    {img && <img src={img} alt="card" className="card-img" />}
+    {children}
+  </div>
 ));
 Card.displayName = 'Card';
 
