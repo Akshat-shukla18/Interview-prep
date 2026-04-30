@@ -1,6 +1,7 @@
 
-  import { useState, useEffect } from "react";
-  import ReactMarkdown from "react-markdown";
+import { useState, useEffect } from "react";
+import axios from "axios";
+import ReactMarkdown from "react-markdown";
   import { useRef } from "react";
   import AuthModal from "./components/Avatar/Auth/AuthModal";
   import { useAuth } from "./context/AuthContext";
@@ -13,6 +14,7 @@
 import Help from "./components/Avatar/Help/help.jsx";
 import FeedbackModal from "./components/Avatar/Feedback/FeedbackModal";
 import { speak } from "./speak";
+import HistoryPanel from "./components/HistoryPanel/HistoryPanel";
 
 
 
@@ -31,8 +33,9 @@ import { speak } from "./speak";
       from: "ai",
       text: "Hello! I’m your AI Career Assistant. I can help you with career guidance, interview preparation, skill roadmaps, resume advice, and job-related doubts.\n\nAsk anything when you’re ready."
     }]);
-  const [chatInput, setChatInput] = useState("");
+const [chatInput, setChatInput] = useState("");
   const [avatarState, setAvatarState] = useState(AVATAR_STATES.IDLE);
+  const [isSaved, setIsSaved] = useState(false);
   const [uploadedDoc, setUploadedDoc] = useState(null);
   const [uploading, setUploading] = useState(false);
   const { user, logout } = useAuth();
@@ -162,12 +165,41 @@ const toggleMic = () => {
 
 
 
-  const startNewChat = () => {
+const startNewChat = () => {
     setMode("chat");
     setChatMessages([]);
     setChatInput("");
     setLoading(false);
     setChatSessionId((prev) => prev + 1);
+  };
+
+const handleSave = async () => {
+    if (!user) {
+      setAuthOpen(true);
+      return;
+    }
+
+    try {
+      const messages = chatMessages.map((m) => ({
+        role: m.from === "user" ? "user" : "assistant",
+        content: m.text,
+        timestamp: new Date()
+      }));
+
+      const summary = chatMessages.length > 0 
+        ? chatMessages[chatMessages.length - 1]?.text?.slice(0, 100) || "Chat session"
+        : "Chat session";
+
+      await axios.post("http://localhost:5000/api/history/save", {
+        userId: user.uid,
+        messages,
+        summary
+      });
+
+      setIsSaved(true);
+    } catch (err) {
+      console.error("Failed to save history:", err);
+    }
   };
 
 
@@ -368,25 +400,14 @@ const toggleMic = () => {
     🧾 Interview Mode
   </button>
           <div className="history-header">History</div>
-          <input
+<input
     className="history-search"
     placeholder="Search chats..."
     value={search}
     onChange={(e) => setSearch(e.target.value)}
   />
 
-          <div className="history-list">
-          
-            
-            </div> 
-            
-
-  <button
-    className="new-chat-btn"
-    onClick={() => startNewChat("chat")}
-  >
-    + New Chat
-  </button>
+          <HistoryPanel />
     
             
           
@@ -398,7 +419,15 @@ const toggleMic = () => {
 
           {mode === "chat" && (
     <div className="chat-box">
-    <div className="chat-header"> AI Guidance Desk </div> 
+     
+    <div className="chat-header">  AI Guidance Desk <button 
+        
+onClick={() => handleSave()}
+        disabled={isSaved}
+        title={isSaved ? "Saved to history" : "Save to history"}
+      >
+        {isSaved ? "✅" : "💾"}
+      </button> </div> 
   {uploadedDoc && (
     <div className="attached-doc-banner">
       <span>📄 {uploadedDoc.name}</span>
@@ -420,12 +449,21 @@ const toggleMic = () => {
   ))}
 
 
-        {loading && (
+{loading && (
           <div className="message ai thinking">
             ...
           </div>
         )}
       </div>
+
+<button 
+        className="save-history-btn"
+onClick={() => handleSave()}
+        disabled={isSaved}
+        title={isSaved ? "Saved to history" : "Save to history"}
+      >
+        {isSaved ? "✅" : "💾"}
+      </button>
 
     <div className="chat-input-wrapper">
       <label className="upload-btn">

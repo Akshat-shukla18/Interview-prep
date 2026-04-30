@@ -3,15 +3,25 @@ import cors from "cors";
 import dotenv from "dotenv";
 import nodemailer from "nodemailer";
 import uploadRoute from "./routes/upload.js";
+import historyRoute from "./routes/history.js";
 import rateLimit from 'express-rate-limit';
+import mongoose from "mongoose";
 
 dotenv.config();
+
+
+mongoose.connect(process.env.MONGO_URI)
+  .then(() => console.log("MongoDB Connected ✅"))
+  .catch((err) => console.error("MongoDB Error ❌", err));
+
+
 
 const app = express();
 
 app.use(cors());
 app.use(express.json());
 app.use("/upload", uploadRoute);
+app.use("/api/history", historyRoute);
 app.use('/chat/public', rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 50,
