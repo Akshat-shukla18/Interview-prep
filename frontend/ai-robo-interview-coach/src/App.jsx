@@ -53,7 +53,11 @@ const [chatInput, setChatInput] = useState("");
     const [showInterviewSetup, setShowInterviewSetup] = useState(false);
     const [seconds, setSeconds] = useState(0);
   const [timerRunning, setTimerRunning] = useState(false);
-  const [showExitConfirm, setShowExitConfirm] = useState(false);
+const [showExitConfirm, setShowExitConfirm] = useState(false);
+  const [showReport, setShowReport] = useState(false);
+const [reportData, setReportData] = useState(null);
+  const [showViewHistory, setShowViewHistory] = useState(false);
+  const [viewHistoryData, setViewHistoryData] = useState(null);
   const [search, setSearch] = useState("");
   const [entered, setEntered] = useState(false);
    const [screen, setScreen] = useState("landing");
@@ -150,10 +154,72 @@ const toggleMic = () => {
   const stopStopwatch = () => {
     setTimerRunning(false);
   };
-  const formatTime = (s) => {
+const formatTime = (s) => {
     const mins = Math.floor(s / 60);
     const secs = s % 60;
     return `${mins}:${secs < 10 ? "0" : ""}${secs}`;
+  };
+
+// Generate report from interview session
+  const generateReport = () => {
+    const userMessages = interviewMessages.filter(m => m.from === "user");
+    const aiMessages = interviewMessages.filter(m => m.from === "ai");
+    
+    // Calculate performance score based on Q&A engagement
+    const answerLengths = userMessages.map(m => m.text.length);
+    const avgAnswerLength = answerLengths.length > 0 
+      ? answerLengths.reduce((a, b) => a + b, 0) / answerLengths.length 
+      : 0;
+    
+    // Calculate score out of 10 based on participation and answer quality
+    let score = 0;
+    if (aiMessages.length > 0) score += 2; // Base score for participation
+    if (userMessages.length >= aiMessages.length * 0.7) score += 2; // Answered most questions
+    if (avgAnswerLength > 50) score += 2; // Detailed answers
+    if (avgAnswerLength > 100) score += 2; // Very detailed answers
+    if (seconds > 60) score += 2; //Spent good time
+    
+    // Generate areas to improve based on score
+    const areasToImprove = [];
+    if (score < 6) areasToImprove.push("Try to answer more questions with more detail");
+    if (avgAnswerLength < 50) areasToImprove.push("Provide more detailed answers with examples");
+    if (userMessages.length < aiMessages.length * 0.7) areasToImprove.push("Attempt to answer all questions posed");
+    if (seconds < 60) areasToImprove.push("Spend more time on each answer to show depth");
+    if (areasToImprove.length === 0) areasToImprove.push("Great job! Keep practicing to maintain consistency");
+    
+    // Generate candidate qualities based on answer quality
+    const qualities = [];
+    if (avgAnswerLength > 30) qualities.push("Shows willingness to communicate");
+    if (avgAnswerLength > 80) qualities.push("Provides detailed responses");
+    if (userMessages.some(m => m.text.toLowerCase().includes("i") || m.text.toLowerCase().includes("my"))) {
+      qualities.push("Uses personal examples to illustrate points");
+    }
+    if (userMessages.some(m => m.text.toLowerCase().includes("year") || m.text.toLowerCase().includes("experience"))) {
+      qualities.push("References relevant experience");
+    }
+    if (userMessages.some(m => m.text.toLowerCase().includes("skill") || m.text.toLowerCase().includes("能力"))) {
+      qualities.push("Highlights technical skills");
+    }
+    if (qualities.length === 0) qualities.push("Good participation in the interview");
+    
+    const report = {
+      jobTitle: interviewConfig.jobTitle,
+      experience: interviewConfig.experience,
+      duration: formatTime(seconds),
+      totalQuestions: aiMessages.length,
+      totalAnswers: userMessages.length,
+      performanceScore: score,
+      areasToImprove,
+      qualities,
+      questions: aiMessages.map((m, i) => ({
+        question: m.text.substring(0, 100) + (m.text.length > 100 ? "..." : ""),
+        answer: userMessages[i]?.text?.substring(0, 100) + (userMessages[i]?.text?.length > 100 ? "..." : "")
+      }))
+    };
+    
+    setReportData(report);
+    setShowReport(true);
+    setShowExitConfirm(false);
   };
 
 
@@ -199,6 +265,23 @@ const handleSave = async () => {
       setIsSaved(true);
     } catch (err) {
       console.error("Failed to save history:", err);
+    }
+  };
+
+  const handleViewHistory = (item) => {
+    setViewHistoryData(item);
+    setShowViewHistory(true);
+  };
+
+  const handleDeleteHistory = async (id) => {
+    try {
+      await axios.delete(`http://localhost:5000/api/history/${id}`);
+      setShowViewHistory(false);
+      setViewHistoryData(null);
+      // Refresh will happen automatically when component re-renders
+      window.location.reload();
+    } catch (err) {
+      console.error("Failed to delete history:", err);
     }
   };
 
@@ -391,7 +474,7 @@ const handleSave = async () => {
     className="new-chat-btn"
     onClick={() => startNewChat("chat")}
   >
-    💬 AI Assistance
+    💬 AI Assistance | New 💬
   </button>
     <button
     className="interview-mode-btn"
@@ -399,15 +482,10 @@ const handleSave = async () => {
   >
     🧾 Interview Mode
   </button>
-          <div className="history-header">History</div>
-<input
-    className="history-search"
-    placeholder="Search chats..."
-    value={search}
-    onChange={(e) => setSearch(e.target.value)}
-  />
+          <div className="history-header"></div>
 
-          <HistoryPanel />
+
+<HistoryPanel onViewHistory={handleViewHistory} />
     
             
           
@@ -456,14 +534,7 @@ onClick={() => handleSave()}
         )}
       </div>
 
-<button 
-        className="save-history-btn"
-onClick={() => handleSave()}
-        disabled={isSaved}
-        title={isSaved ? "Saved to history" : "Save to history"}
-      >
-        {isSaved ? "✅" : "💾"}
-      </button>
+
 
     <div className="chat-input-wrapper">
       <label className="upload-btn">
@@ -625,19 +696,97 @@ onClick={() => handleSave()}
             Cancel
           </button>
 
-          <button
-            className="confirm-exit-btn"
+<button
+            className="generate-report-btn"
             onClick={() => {
               stopStopwatch();
-               window.speechSynthesis.cancel();
-              setShowExitConfirm(false);
-              setMode("chat");
+              window.speechSynthesis.cancel();
+              generateReport();
             }}
           >
-            Exit
+            Generate Report
           </button>
         </div>
 
+      </div>
+    </div>
+)}
+  {showReport && reportData && (
+    <div className="modal-overlay">
+      <div className="report-modal">
+        <button
+          className="modal-close-btn"
+          onClick={() => {
+            setShowReport(false);
+            setMode("chat");
+          }}
+        >
+          ✕
+        </button>
+
+        <h3>Interview Report</h3>
+        
+<div className="report-summary">
+          <div className="report-item">
+            <span className="report-label">Job Title:</span>
+            <span className="report-value">{reportData.jobTitle}</span>
+          </div>
+          <div className="report-item">
+            <span className="report-label">Experience:</span>
+            <span className="report-value">{reportData.experience} years</span>
+          </div>
+          <div className="report-item">
+            <span className="report-label">Duration:</span>
+            <span className="report-value">{reportData.duration}</span>
+          </div>
+          <div className="report-item">
+            <span className="report-label">Total Q&A:</span>
+            <span className="report-value">{reportData.totalQuestions} questions, {reportData.totalAnswers} answers</span>
+          </div>
+        </div>
+
+        <div className="performance-score">
+          <span className="score-label">Performance Score:</span>
+          <span className="score-value">{reportData.performanceScore}/10</span>
+        </div>
+
+        <div className="areas-section">
+          <h4>Areas to Improve:</h4>
+          <ul className="areas-list">
+            {reportData.areasToImprove.map((area, i) => (
+              <li key={i}>{area}</li>
+            ))}
+          </ul>
+        </div>
+
+        <div className="qualities-section">
+          <h4>Candidate Qualities:</h4>
+          <ul className="qualities-list">
+            {reportData.qualities.map((quality, i) => (
+              <li key={i}>{quality}</li>
+            ))}
+          </ul>
+        </div>
+
+        <div className="report-questions">
+          <h4>Questions & Answers:</h4>
+          {reportData.questions.slice(0, 5).map((q, i) => (
+            <div key={i} className="qa-item">
+              <p className="qa-question"><strong>Q{i+1}:</strong> {q.question}</p>
+              {q.answer && <p className="qa-answer"><strong>A:</strong> {q.answer}</p>}
+            </div>
+          ))}
+        </div>
+
+        <button
+          className="back-to-chat-btn"
+          onClick={() => {
+            setShowReport(false);
+            setMode("chat");
+          }}
+        >
+          Back to Chat
+        </button>
       </div>
     </div>
   )}
@@ -657,7 +806,7 @@ onClick={() => handleSave()}
         <h3>Interview Setup</h3>
 
         <input
-          placeholder="Job Title (e.g. Frontend Developer)"
+          placeholder="Job Title (e.g.For Frontend Developer)"
           value={interviewConfig.jobTitle}
           onChange={(e) =>
             setInterviewConfig({
@@ -666,6 +815,8 @@ onClick={() => handleSave()}
             })
           }
         />
+        <input
+          placeholder="Proffession? (e.g. Data Analyst)"/>
 
         <select
           value={interviewConfig.experience}
@@ -710,7 +861,44 @@ speak("Introduce yourself.");
       </div>
     </div>
   )}
-  {authOpen && <AuthModal onClose={() => setAuthOpen(false)} />}
+{authOpen && <AuthModal onClose={() => setAuthOpen(false)} />}
+  {showViewHistory && viewHistoryData && (
+    <div className="modal-overlay">
+      <div className="view-history-modal">
+        <button
+          className="modal-close-btn"
+          onClick={() => {
+            setShowViewHistory(false);
+            setViewHistoryData(null);
+          }}
+        >
+          ✕
+        </button>
+
+        <h3>Chat History</h3>
+        
+        <div className="view-history-messages">
+          {viewHistoryData.messages.map((msg, idx) => (
+            <div key={idx} className={`message ${msg.role}`}>
+              <div className="message-label">
+                {msg.role === "user" ? "You" : "AI"}
+              </div>
+              <div className="message-content">
+                {msg.content}
+              </div>
+            </div>
+          ))}
+        </div>
+
+        <button
+          className="delete-history-btn"
+          onClick={() => handleDeleteHistory(viewHistoryData._id)}
+        >
+          Delete Chat
+        </button>
+      </div>
+    </div>
+  )}
   {feedbackOpen && <FeedbackModal isOpen={feedbackOpen} onClose={() => setFeedbackOpen(false)} user={user} />}
   {profileOpen && (
     <div className="modal-overlay">

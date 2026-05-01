@@ -49,4 +49,17 @@ router.post("/save", async (req, res) => {
   }
 });
 
+router.delete("/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+    
+    await ChatHistory.findByIdAndDelete(id);
+    
+    res.json({ success: true, message: "History deleted" });
+  } catch (err) {
+    console.error("Delete history error:", err);
+    res.status(500).json({ error: "Failed to delete history" });
+  }
+});
+
 export default router;

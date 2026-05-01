@@ -63,8 +63,8 @@ export default function Help({ onBack }) {
 
         <div className="contact-box">
           <span>📧 Email</span>
-          <a href="mailto:developer@interviewai.com">
-            developer@interviewai.com
+          <a href="mailto:akweb2025@gmail.com">
+            akweb2025@gmail.com
           </a>
         </div>
       </div>

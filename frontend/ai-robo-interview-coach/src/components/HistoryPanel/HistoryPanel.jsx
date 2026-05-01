@@ -3,24 +3,21 @@ import axios from "axios";
 import { useAuth } from "../../context/AuthContext";
 import "./HistoryPanel.css";
 
-function HistoryPanel({ onSelectHistory }) {
+function HistoryPanel({ onSelectHistory, onViewHistory }) {
   const [history, setHistory] = useState([]);
   const [expandedId, setExpandedId] = useState(null);
   const [loading, setLoading] = useState(false);
   const { user } = useAuth();
 
-useEffect(() => {
-    console.log("HistoryPanel: user", user);
+  useEffect(() => {
     if (!user) return;
 
     const fetchHistory = async () => {
       setLoading(true);
       try {
-        console.log("Fetching history for userId:", user.uid);
         const res = await axios.get(
           `http://localhost:5000/api/history?userId=${user.uid}`
         );
-        console.log("History response:", res.data);
         setHistory(res.data);
       } catch (err) {
         console.error("Failed to fetch history:", err);
@@ -42,13 +39,26 @@ useEffect(() => {
     });
   };
 
-  const toggleExpand = (id) => {
+const toggleExpand = (id) => {
+    // Only open popup when expanding (not when collapsing)
+    if (expandedId !== id) {
+      const item = history.find(h => h._id === id);
+      if (item && onViewHistory) {
+        onViewHistory(item);
+      }
+    }
     setExpandedId(expandedId === id ? null : id);
   };
 
   const handleSelectHistory = (item) => {
     if (onSelectHistory) {
       onSelectHistory(item.messages);
+    }
+  };
+
+const handleViewHistory = (item) => {
+    if (onViewHistory) {
+      onViewHistory(item);
     }
   };
 
@@ -89,7 +99,7 @@ useEffect(() => {
                 </div>
               </div>
 
-              {expandedId === item._id && (
+{expandedId === item._id && (
                 <div className="history-messages">
                   {item.messages.map((msg, idx) => (
                     <div
@@ -104,12 +114,20 @@ useEffect(() => {
                       </div>
                     </div>
                   ))}
-                  <button
-                    className="history-load-btn"
-                    onClick={() => handleSelectHistory(item)}
-                  >
-                    Load this chat
-                  </button>
+                  <div className="history-actions">
+                    <button
+                      className="history-view-btn"
+                      onClick={() => handleViewHistory(item)}
+                    >
+                      View Full
+                    </button>
+                    <button
+                      className="history-load-btn"
+                      onClick={() => handleSelectHistory(item)}
+                    >
+                      Load
+                    </button>
+                  </div>
                 </div>
               )}
             </div>

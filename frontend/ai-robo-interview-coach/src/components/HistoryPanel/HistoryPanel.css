@@ -2,8 +2,8 @@
 .history-panel-container {
   display: flex;
   flex-direction: column;
-  height: 100%;
-  overflow: hidden;
+  height: 600px;
+  overflow-y: auto;
 }
 
 /* Header */
@@ -210,4 +210,48 @@
 
 .history-load-btn:active {
   transform: translateY(0);
+}
+
+/* History Actions */
+.history-actions {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  margin-top: 8px;
+}
+
+.history-view-btn {
+  padding: 8px 14px;
+  background: linear-gradient(135deg, #8b5cf6, #a855f7);
+  border: none;
+  border-radius: 8px;
+  color: #ffffff;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.history-view-btn:hover {
+  background: linear-gradient(135deg, #a78bfa, #c084fc);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(139, 92, 246, 0.4);
+}
+
+.history-load-btn {
+  padding: 8px 14px;
+  background: linear-gradient(135deg, #2563eb, #1d4ed8);
+  border: none;
+  border-radius: 8px;
+  color: #ffffff;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.history-load-btn:hover {
+  background: linear-gradient(135deg, #3b82f6, #2563eb);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.4);
 }
