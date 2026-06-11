@@ -422,6 +422,7 @@ const handleSave = async () => {
   //app notations:
     return (
     <>
+    
   <video
     autoPlay
     loop
@@ -431,6 +432,8 @@ const handleSave = async () => {
   >
     <source src="/bgvideo.mp4" type="video/mp4" />
   </video>
+
+
   <div className="video-overlay"></div>
       {screen === "landing" && (
       <Landing onEnter={() => setScreen("app")} />
