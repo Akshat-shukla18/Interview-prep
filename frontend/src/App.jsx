@@ -422,6 +422,16 @@ const handleSave = async () => {
   //app notations:
     return (
     <>
+  <video
+    autoPlay
+    loop
+    muted
+    playsInline
+    className="bg-video"
+  >
+    <source src="/bgvideo.mp4" type="video/mp4" />
+  </video>
+  <div className="video-overlay"></div>
       {screen === "landing" && (
       <Landing onEnter={() => setScreen("app")} />
     )}
