@@ -1,4 +1,4 @@
-
+ 
 import { useState, useEffect } from "react";
 import axios from "axios";
 import ReactMarkdown from "react-markdown";
@@ -491,10 +491,44 @@ const handleSave = async () => {
   </button>
     <button
     className="interview-mode-btn"
-  onClick={() => setShowInterviewSetup(true)}
+  onClick={() => {
+    if (!user) {
+      setAuthOpen(true);
+      return;
+    }
+    setShowInterviewSetup(true);
+  }}
   >
     🧾 Interview Mode
-  </button>
+  </button> 
+        {/* <button
+    className="start-interview-btn"
+    onClick={() => {
+      if (!user) {
+        setAuthOpen(true);
+        return;
+      }
+      if (!interviewConfig.jobTitle || !interviewConfig.experience) return;
+
+      setShowInterviewSetup(false);
+      setMode("interview");
+
+      // RESET INTERVIEW STATE
+      setInterviewMessages([
+        {
+          from: "ai",
+          text: "Introduce yourself."
+        }
+      ]);
+speak("Introduce yourself.");
+      setAwaitingAnswer(true);
+      setInterviewInput("");
+      startStopwatch();
+    }}
+  >
+    Start Interview </button> */}
+        
+       
           <div className="history-header"></div>
 
 
