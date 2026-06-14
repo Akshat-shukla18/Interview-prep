@@ -743,6 +743,7 @@ onClick={() => handleSave()}
             Cancel
           </button>
 
+
 <button
             className="generate-report-btn"
             onClick={() => {
@@ -751,7 +752,17 @@ onClick={() => handleSave()}
               generateReport();
             }}
           >
-            Generate Report
+            Evaluate
+          </button>
+          <button
+            className="cancel-btn"
+            onClick={() => {
+              stopStopwatch();
+              window.speechSynthesis.cancel();
+              setShowExitConfirm(false);
+            setMode("chat");}}
+          >
+            Exit
           </button>
         </div>
 

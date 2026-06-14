@@ -811,11 +811,11 @@ font-family: inherit;
 .interview-mode-btn::before {
   content: "";
   position: absolute;
-  inset: 0;
+  top: -50%;
   background: linear-gradient(
     120deg,
-    transparent 20%,
-    rgba(168, 85, 247, 0.25),
+    transparent 50%,
+    rgba(143, 74, 207, 0.25),
     transparent 80%
   );
   opacity: 0;
@@ -826,7 +826,7 @@ font-family: inherit;
 /* HOVER EFFECT */
 .interview-mode-btn:hover {
   transform: translateY(-1px);
-  border-color: rgba(168, 85, 247, 0.9);
+  border-color: rgba(212, 255, 0, 0.9);
 
   box-shadow:
     0 0 0 1px rgba(168, 85, 247, 0.35),
@@ -835,15 +835,16 @@ font-family: inherit;
 
 .interview-mode-btn:hover::before {
   opacity: 1;
-  transform: translateX(100%);
+  transform: translateX(10%);
+  border-color: rgba(212, 255, 0, 0.9);
 }
 
 /* ACTIVE / PRESSED */
 .interview-mode-btn:active {
   transform: translateY(0);
   box-shadow:
-    0 0 0 1px rgba(168, 85, 247, 0.25),
-    0 4px 14px rgba(168, 85, 247, 0.3);
+    0 0 0 1px rgba(198, 204, 11, 0.25),
+    0 4px 14px rgba(174, 255, 0, 0.3);
 }
 
 /* HEADER */

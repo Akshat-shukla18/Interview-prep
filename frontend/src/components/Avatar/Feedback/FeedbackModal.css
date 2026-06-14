@@ -1,156 +1,170 @@
+/* Clean, modern resets & backdrop */
 .feedback-modal-overlay {
   position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-color: rgba(0, 0, 0, 0.5);
+  inset: 0;
+  background: rgba(15, 23, 42, 0.6); /* Soft, deep slate overlay */
+  backdrop-filter: blur(4px); /* Subtle blur for focus */
   display: flex;
   justify-content: center;
   align-items: center;
   z-index: 1000;
 }
 
+/* Professional, crisp modal container */
 .feedback-modal {
-  background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
-  border-radius: 20px;
-  padding: 30px;
-  max-width: 500px;
-  width: 90%;
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
-  animation: modalFadeIn 0.3s ease-out;
   position: relative;
+  width: 90%;
+  max-width: 480px; /* Marginally tighter for better readability */
+  padding: 32px;
+  background: #ffffff;
+  border: 1px solid #e2e8f0; /* Light, clean border */
+  border-radius: 16px; /* Smooth, modern rounding */
+  
+  /* Soft, realistic multi-layered shadow */
+  box-shadow: 
+    0 4px 6px -1px rgba(0, 0, 0, 0.05), 
+    0 20px 25px -5px rgba(0, 0, 0, 0.1),
+    0 10px 10px -5px rgba(0, 0, 0, 0.04);
+
+  animation: modalSlideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  overflow: hidden;
 }
 
-@keyframes modalFadeIn {
+/* Snappy, professional entrance */
+@keyframes modalSlideUp {
   from {
     opacity: 0;
-    transform: scale(0.9);
+    transform: translateY(12px) scale(0.98);
   }
   to {
     opacity: 1;
-    transform: scale(1);
+    transform: translateY(0) scale(1);
   }
 }
 
-.feedback-modal::before {
-  content: '';
-  position: absolute;
-  top: -5px;
-  left: -5px;
-  right: -5px;
-  bottom: -5px;
-  background: linear-gradient(45deg, #ff6b6b, #4ecdc4, #45b7d1, #96ceb4, #ffeaa7);
-  border-radius: 25px;
-  z-index: -1;
-  animation: borderGlow 2s ease-in-out infinite alternate;
-}
-
-@keyframes borderGlow {
-  0% {
-    box-shadow: 0 0 10px rgba(255, 107, 107, 0.5);
-  }
-  100% {
-    box-shadow: 0 0 20px rgba(78, 205, 196, 0.8);
-  }
-}
-
+/* Minimalist close button */
 .feedback-close-btn {
   position: absolute;
-  top: 10px;
-  right: 10px;
-  background: none;
+  top: 16px;
+  right: 20px;
+  background: transparent;
   border: none;
-  font-size: 44px;
-  color: white;
+  font-size: 24px;
+  line-height: 1;
+  color: #94a3b8;
   cursor: pointer;
-  transition: color 0.3s;
+  transition: color 0.2s ease, transform 0.2s ease;
 }
 
 .feedback-close-btn:hover {
-  color: #ff6b6b;
+  color: #475569;
+  transform: scale(1.05);
 }
 
+/* Typography headers */
 .feedback-modal h2 {
-  color: white;
-  margin-bottom: 20px;
   text-align: center;
-  font-size: 28px;
+  color: #0f172a; /* Deep slate gray */
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin-top: 0;
+  margin-bottom: 24px;
 }
 
-.feedback-rating {
-  margin-bottom: 20px;
-}
-
-.feedback-rating label {
-  display: block;
-  color: white;
-  margin-bottom: 10px;
-  font-size: 18px;
-}
-
-.stars {
-  display: flex;
-  justify-content: center;
-}
-
-.star {
-  font-size: 30px;
-  color: #ddd;
-  cursor: pointer;
-  transition: color 0.3s, transform 0.3s;
-  margin: 0 5px;
-}
-
-.star:hover {
-  transform: scale(1.2);
-}
-
-.star.selected {
-  color: #ffd700;
-}
-
+.feedback-rating,
 .feedback-description {
   margin-bottom: 20px;
 }
 
+/* Standardized labels */
+.feedback-rating label,
 .feedback-description label {
   display: block;
-  color: white;
-  margin-bottom: 10px;
-  font-size: 18px;
+  color: #334155;
+  margin-bottom: 8px;
+  font-size: 14px;
+  font-weight: 500;
 }
 
+/* Stars component */
+.stars {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+}
+
+.star {
+  font-size: 28px;
+  color: #cbd5e1; /* Light gray unselected state */
+  cursor: pointer;
+  transition: color 0.2s ease, transform 0.1s ease;
+}
+
+.star:hover {
+  color: #eab308; /* Calmer yellow gold */
+  transform: scale(1.1);
+}
+
+.star.selected {
+  color: #eab308;
+}
+
+/* Elegant Textarea input */
 .feedback-description textarea {
   width: 100%;
-  padding: 10px;
-  border: none;
-  border-radius: 10px;
+  min-height: 110px;
+  padding: 12px 14px;
+  background: #f8fafc; /* Subtle off-white input tracking */
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  color: #0f172a;
+  font-family: inherit;
+  font-size: 14px;
+  line-height: 1.5;
   resize: vertical;
-  font-size: 16px;
-  background-color: rgba(255, 255, 255, 0.9);
-  color: #333;
+  outline: none;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
+.feedback-description textarea::placeholder {
+  color: #94a3b8;
+}
+
+/* Accessible, clean focus ring */
+.feedback-description textarea:focus {
+  border-color: #3b82f6; /* Trustworthy corporate blue */
+  box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.12);
+  background: #ffffff;
+}
+
+/* Solid, clean Action Button */
 .feedback-send-btn {
-  display: block;
   width: 100%;
   padding: 12px;
-  background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
-  color: white;
-  border: none;
-  border-radius: 10px;
-  font-size: 18px;
+  border: 1px solid #1d4ed8;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
   cursor: pointer;
-  transition: background 0.3s, transform 0.3s;
+  color: white;
+  background: #2563eb; /* Stable brand blue */
+  transition: background-color 0.15s ease, box-shadow 0.15s ease, transform 0.1s ease;
 }
 
-.feedback-send-btn:hover {
-  background: linear-gradient(45deg, #4ecdc4, #ff6b6b);
-  transform: translateY(-2px);
+.feedback-send-btn:hover:not(:disabled) {
+  background: #1d4ed8;
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);
 }
 
+.feedback-send-btn:active:not(:disabled) {
+  transform: translateY(0);
+  background: #1e40af;
+}
+
+/* Disabled state handling */
 .feedback-send-btn:disabled {
-  opacity: 0.6;
+  background: #f1f5f9;
+  border-color: #e2e8f0;
+  color: #94a3b8;
   cursor: not-allowed;
 }
