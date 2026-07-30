@@ -18,7 +18,10 @@ mongoose.connect(process.env.MONGO_URI)
 
 const app = express();
 
-app.use(cors());
+app.use(cors({
+  origin: "https://interview-prep-4dnx.onrender.com",
+  credentials: true
+}));
 app.use(express.json());
 app.use("/upload", uploadRoute);
 app.use("/api/history", historyRoute);
@@ -124,8 +127,8 @@ IMPORTANT RULES:
         headers: {
           "Authorization": `Bearer ${process.env.AI_API_KEY}`,
           "Content-Type": "application/json",
-          "HTTP-Referer": "http://localhost:5173",
-          "X-Title": "AI Robo Interview Coach"
+          "HTTP-Referer": "https://interview-prep-4dnx.onrender.com",
+          "X-Title": "AI Mentor/Interview Coach"
         },
         body: JSON.stringify({
           model: "openai/gpt-3.5-turbo",
