@@ -19,7 +19,7 @@ mongoose.connect(process.env.MONGO_URI)
 const app = express();
 
 app.use(cors({
-  origin: "https://interview-prep-4dnx.onrender.com",
+  origin: "https://interview-prepa.netlify.app",
   credentials: true
 }));
 app.use(express.json());
