@@ -93,7 +93,7 @@ const [reportData, setReportData] = useState(null);
     formData.append("file", file);
 
     try {
-      const res = await fetch("http://localhost:5000/upload", {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/upload`, {
         method: "POST",
         body: formData
       });
@@ -256,7 +256,7 @@ const handleSave = async () => {
         ? chatMessages[chatMessages.length - 1]?.text?.slice(0, 100) || "Chat session"
         : "Chat session";
 
-      await axios.post("http://localhost:5000/api/history/save", {
+      await axios.post(`${import.meta.env.VITE_API_URL}/api/history/save`, {
         userId: user.uid,
         messages,
         summary
@@ -275,7 +275,7 @@ const handleSave = async () => {
 
   const handleDeleteHistory = async (id) => {
     try {
-      await axios.delete(`http://localhost:5000/api/history/${id}`);
+      await axios.delete(`${import.meta.env.VITE_API_URL}/api/history/${id}`);
       setShowViewHistory(false);
       setViewHistoryData(null);
       // Refresh will happen automatically when component re-renders
@@ -321,7 +321,7 @@ const handleSave = async () => {
       mode === "chat" && uploadedDoc ? uploadedDoc.text : null
   };
 
-  const res = await fetch("http://localhost:5000/chat/public", {
+  const res = await fetch(`${import.meta.env.VITE_API_URL}/chat/public`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(payload)
