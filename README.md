@@ -1,10 +1,10 @@
-# 🤖 AI Interview Coach — AI-Robo
+# 🤖 AI Interview Preparation — 
 
 > Your dedicated AI partner for interview preparation, career guidance, and placement success.
 
-Crack interviews smarter. **AI-Robo** is a full-stack, AI-powered interview preparation and career coaching platform that combines a **realistic AI interview simulator**, an **AI career assistant**, **resume/ATS analysis**, **voice interactions**, and a **3D animated avatar** — all in one immersive experience.
+Crack interviews smarter. **Interview Prep** is a full-stack, AI-powered interview preparation and career coaching platform that combines a **realistic AI interview simulator**, an **AI career assistant**, **resume/ATS analysis**, **voice interactions**- all in one immersive experience.
 
-Confidence can't be built in one day… but it can be built *one day at a time* — and AI-Robo is here to help you practice every step of the way. 🚀
+Confidence can't be built in one day… but it can be built *one day at a time* — and AI-Interview preparation is here to help you practice every step of the way. 🚀
 
 ---
 
